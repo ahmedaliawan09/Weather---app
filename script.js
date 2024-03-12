@@ -27,9 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to fetch and display the weather for the searched city
-    async function searchCityWeather(city) {
+    async function searchCityWeather(city, country) {
         try {
-            const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
+            const response = await fetch(apiUrl + city + ',' + country + `&appid=${apiKey}`);
             if (response.ok) {
                 const data = await response.json();
                 displayCurrentWeather(data);
@@ -145,7 +145,9 @@ document.addEventListener('DOMContentLoaded', function() {
         url: function (phrase) {
             return `${apiUrl}search?q=${phrase}&appid=${apiKey}`;
         },
-        getValue: "name",
+        getValue: function (element) {
+            return element.name + ', ' + element.country;
+        },
         list: {
             match: {
                 enabled: true
@@ -153,7 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
             onSelectItemEvent: function() {
                 const selectedCity = searchBox.getSelectedItemData();
                 if (selectedCity) {
-                    searchCityWeather(selectedCity.name);
+                    const [city, country] = selectedCity.name.split(',').map(item => item.trim());
+                    searchCityWeather(city, country);
                 }
             }
         }
