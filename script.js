@@ -1,3 +1,4 @@
+// Your full code with modifications
 document.addEventListener('DOMContentLoaded', function() {
     const apiKey = "996fe6ea9aa4959a9c7d1b765bdf12d5";
     const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
@@ -68,20 +69,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 forecastGrid.innerHTML = ''; // Clear previous content
 
                 // Loop through each day's data and create a grid item for each
-                forecastData.list.slice(0, 5).forEach(day => {
+                const uniqueDays = {};
+                forecastData.list.forEach(day => {
                     const date = new Date(day.dt * 1000);
-                    const temperature = Math.round(day.main.temp) + "°C";
-                    const weatherDescription = day.weather[0].description;
-                    const forecastItem = document.createElement('div'); // Create a div for each day's data
-                    forecastItem.classList.add('forecast-item');
+                    const dateString = date.toLocaleDateString();
+                    if (!uniqueDays[dateString]) {
+                        uniqueDays[dateString] = true;
 
-                    // Populate the content of the grid item
-                    forecastItem.innerHTML = `
-                        <h3>${date.toLocaleDateString()}</h3>
-                        <p>Temperature: ${temperature}</p>
-                        <p>Description: ${weatherDescription}</p>
-                    `;
-                    forecastGrid.appendChild(forecastItem); // Append the grid item to the forecast grid
+                        const temperature = Math.round(day.main.temp) + "°C";
+                        const weatherDescription = day.weather[0].description;
+                        const forecastItem = document.createElement('div'); // Create a div for each day's data
+                        forecastItem.classList.add('forecast-item');
+
+                        // Populate the content of the grid item
+                        forecastItem.innerHTML = `
+                            <h3>${date.toLocaleDateString()}</h3>
+                            <p>Temperature: ${temperature}</p>
+                            <p>Description: ${weatherDescription}</p>
+                        `;
+                        forecastGrid.appendChild(forecastItem); // Append the grid item to the forecast grid
+
+                        if (Object.keys(uniqueDays).length >= 5) {
+                            return; // Stop processing if we have added data for five unique days
+                        }
+                    }
                 });
 
                 document.querySelector(".forecast").style.display = "block";
@@ -128,12 +139,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event listener for search button click
-    searchBtn.addEventListener("click", () => {
+    function handleSearch() {
         const city = searchBox.value.trim();
         if (city) {
             searchCityWeather(city);
         } else {
             getCurrentWeather();
+        }
+    }
+
+    searchBtn.addEventListener("click", handleSearch);
+    searchBox.addEventListener("keypress", function(event) {
+        if (event.key === 'Enter') {
+            handleSearch();
         }
     });
 
